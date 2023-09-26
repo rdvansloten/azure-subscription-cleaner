@@ -83,7 +83,7 @@ steps:
         --tags "$tags" \
         --output "none"
 
-      echo "Setting app settings on Function App ${{ parameters.functionAppName }}...""
+      echo "Setting app settings on Function App ${{ parameters.functionAppName }}..."
       values=("EXPIRY_DAYS=${{ parameters.expiryDays }}" "MANAGED_IDENTITY_CLIENT_ID=$managedIdentityClientId" "AZURE_SUBSCRIPTION_ID=${{ parameters.subscriptionId }}")
 
       for value in "${values[@]}"; do

@@ -97,7 +97,7 @@ steps:
         --functions-version "4" \
         --os-type "Linux" \
         --runtime "python" \
-        --runtime-version "3.11" \
+        --runtime-version "3.9" \
         --tags "$tags" \
         --output "none"
 

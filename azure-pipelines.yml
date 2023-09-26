@@ -50,19 +50,11 @@ steps:
       echo "Switching to Subscription ${{ parameters.subscriptionId }}..."
       az account set --subscription ${{ parameters.subscriptionId }}
 
-      echo "Creating Storage Account ${{ parameters.resourceGroupName }} in Location ${{ parameters.location }}..."
-      az group create \
-      --name "${{ parameters.resourceGroupName }}" \
-      --location "${{ parameters.location }}" \
-      --tags "$tags"
+      echo "Creating Resource Group ${{ parameters.resourceGroupName }} in Location ${{ parameters.location }}..."
+      az group create --name "${{ parameters.resourceGroupName }}" --location "${{ parameters.location }}" --tags "$tags"
 
       echo "Creating Storage Account ${{ parameters.storageAccountName }} in Resource Group ${{ parameters.resourceGroupName }}..."
-      az storage account create \
-      --name "${{ parameters.storageAccountName }}" \ 
-      --location "${{ parameters.location }}" \
-      --resource-group "${{ parameters.resourceGroupName }}" \
-      --sku "Standard_LRS" \
-      --tags "$tags"
+      az storage account create --name "${{ parameters.storageAccountName }}" --location "${{ parameters.location }}" --resource-group "${{ parameters.resourceGroupName }}" --sku "Standard_LRS" --tags "$tags"
 
       echo "Creating Managed Identity for Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
       managedIdentityJson=$(az identity create \

@@ -59,10 +59,12 @@ steps:
       echo "Creating Managed Identity for Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
       managedIdentityJson=$(az identity create --name "${{ parameters.functionAppName }}-identity" --resource-group "${{ parameters.resourceGroupName }}" --tags "$tags" --output "json")
         
-      $managedIdentityName=$($managedIdentityJson | jq -r '.clientId')
+      $managedIdentityName=$($managedIdentityJson | jq -r '.name')
       $managedIdentityId=$($managedIdentityJson | jq -r '.id')
       $managedIdentityClientId=$($managedIdentityJson | jq -r '.clientId')
       $managedIdentityPrincipalId=$($managedIdentityJson | jq -r '.principalId')
+
+      echo "Assigning Managed Identity $managedIdentityName with ID $managedIdentityId and Client ID $managedIdentityClientId and Principal ID $managedIdentityPrincipalId"
 
       echo "Assigning Managed Identity $managedIdentityName permissions on Subscription ${{ parameters.subscriptionId }}..."
       az role assignment create --assignee-object-id "$managedIdentityPrincipalId" --role ${{ parameters.managedIdentityRoleName }} --assignee-principal-type "ServicePrincipal" --scope "/subscriptions/${{ parameters.subscriptionId }}" --output "none"

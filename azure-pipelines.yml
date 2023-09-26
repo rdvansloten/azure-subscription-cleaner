@@ -24,7 +24,7 @@ parameters:
 - name: location
   displayName: "Azure Region:"
   type: string
-  default: northeurope
+  default: westeurope
 
 - name: managedIdentityRoleName
   displayName: "Managed Identity Role name:"

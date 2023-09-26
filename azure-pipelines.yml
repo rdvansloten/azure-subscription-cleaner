@@ -48,19 +48,19 @@ steps:
       tags="ExpiryDate=Exempt"
 
       echo "Switching to Subscription ${{ parameters.subscriptionId }}..."
-      az account set --subscription ${{ parameters.subscriptionId }}
+      az account set --subscription ${{ parameters.subscriptionId }} --output "none"
 
       echo "Creating Resource Group ${{ parameters.resourceGroupName }} in Location ${{ parameters.location }}..."
-      az group create --name "${{ parameters.resourceGroupName }}" --location "${{ parameters.location }}" --tags "$tags"
+      az group create --name "${{ parameters.resourceGroupName }}" --location "${{ parameters.location }}" --tags "$tags" --output "none"
 
       echo "Creating Storage Account ${{ parameters.storageAccountName }} in Resource Group ${{ parameters.resourceGroupName }}..."
-      az storage account create --name "${{ parameters.storageAccountName }}" --location "${{ parameters.location }}" --resource-group "${{ parameters.resourceGroupName }}" --sku "Standard_LRS" --tags "$tags"
+      az storage account create --name "${{ parameters.storageAccountName }}" --location "${{ parameters.location }}" --resource-group "${{ parameters.resourceGroupName }}" --sku "Standard_LRS" --tags "$tags" --output "none"
 
       echo "Creating Managed Identity for Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
-      managedIdentityJson=$(az identity create --name "${{ parameters.functionAppName }}-identity" --resource-group "${{ parameters.resourceGroupName }}" -o json)
+      managedIdentityJson=$(az identity create --name "${{ parameters.functionAppName }}-identity" --resource-group "${{ parameters.resourceGroupName }}" --tags "$tags" --output "json")
         
       echo "Assigning Managed Identity $(echo $managedIdentityJson | jq -r '.name') permissions on Subscription ${{ parameters.subscriptionId }}..."
-      az role assignment create --assignee-object-id $(echo $managedIdentityJson | jq -r '.principalId') --role ${{ parameters.managedIdentityRoleName }} --assignee-principal-type "ServicePrincipal" --scope "/subscriptions/${{ parameters.subscriptionId }}"
+      az role assignment create --assignee-object-id $(echo $managedIdentityJson | jq -r '.principalId') --role ${{ parameters.managedIdentityRoleName }} --assignee-principal-type "ServicePrincipal" --scope "/subscriptions/${{ parameters.subscriptionId }}" --output "none"
 
       echo "Creating Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
       az functionapp create \
@@ -73,14 +73,15 @@ steps:
       --os-type "Linux" \
       --runtime "python" \
       --runtime-version "3.11" \
-      --tags "$tags"
+      --tags "$tags" \
+      --output "none"
 
       echo "Setting app settings on Function App ${{ parameters.functionAppName }}...""
       values=("EXPIRY_DAYS=${{ parameters.expiryDays }}" "MANAGED_IDENTITY_CLIENT_ID=$(echo $managedIdentityJson | jq -r '.clientId')" "AZURE_SUBSCRIPTION_ID=${{ parameters.subscriptionId }}")
 
       for value in "${values[@]}"; do
         echo "Setting app setting $value on Function App ${{ parameters.functionAppName }}..."
-        az functionapp config appsettings set --name ${{ parameters.functionAppName }} --resource-group "${{ parameters.resourceGroupName }}" --settings "$value"
+        az functionapp config appsettings set --name ${{ parameters.functionAppName }} --resource-group "${{ parameters.resourceGroupName }}" --settings "$value" --output "none"
       done
 
 - task: AzureCLI@2

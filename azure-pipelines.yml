@@ -40,11 +40,14 @@ steps:
 - task: AzureCLI@2
   displayName: Set up Function App
   inputs:
-    azureSubscription: "${{ parameters.subscriptionId }}"
+    azureSubscription: "${{ parameters.serviceConnection }}"
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
       tags="ExpiryDate=Exempt"
+
+      echo "Switching to Subscription ${{ parameters.subscriptionId }}..."
+      az account set --subscription ${{ parameters.subscriptionId }}
 
       echo "Creating Storage Account ${{ parameters.resourceGroupName }} in Location ${{ parameters.location }}..."
       az group create \
@@ -99,7 +102,7 @@ steps:
 - task: AzureCLI@2
   displayName: Install requirements from requirements.txt
   inputs:
-    azureSubscription: "${{ parameters.subscriptionId }}"
+    azureSubscription: "${{ parameters.serviceConnection }}"
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
@@ -118,7 +121,7 @@ steps:
 - task: AzureCLI@2
   displayName: Deploy zipped application to Azure Function
   inputs:
-    azureSubscription: "${{ parameters.subscriptionId }}"
+    azureSubscription: "${{ parameters.serviceConnection }}"
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |

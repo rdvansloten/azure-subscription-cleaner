@@ -46,6 +46,8 @@ steps:
     inlineScript: |
       tags="ExpiryDate=Exempt"
 
+      az config set core.only_show_errors=yes
+
       echo "Switching to Subscription ${{ parameters.subscriptionId }}..."
       az account set --subscription ${{ parameters.subscriptionId }} --output "none"
 

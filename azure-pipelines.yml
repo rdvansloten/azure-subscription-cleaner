@@ -139,6 +139,7 @@ steps:
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
+      echo "Deploying zipped application to Azure Function ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
       az functionapp deployment source config-zip \
         --name "${{ parameters.functionAppName }}" \
         --resource-group "${{ parameters.resourceGroupName }}" \

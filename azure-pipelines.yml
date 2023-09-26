@@ -59,10 +59,10 @@ steps:
       echo "Creating Managed Identity for Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
       managedIdentityJson=$(az identity create --name "${{ parameters.functionAppName }}-identity" --resource-group "${{ parameters.resourceGroupName }}" --tags "$tags" --output "json")
         
-      $managedIdentityName=$(echo $managedIdentityJson | jq -r '.name')
-      $managedIdentityId=$(echo $managedIdentityJson | jq -r '.id')
-      $managedIdentityClientId=$(echo $managedIdentityJson | jq -r '.clientId')
-      $managedIdentityPrincipalId=$(echo $managedIdentityJson | jq -r '.principalId')
+      managedIdentityName=$(echo $managedIdentityJson | jq -r '.name')
+      managedIdentityId=$(echo $managedIdentityJson | jq -r '.id')
+      managedIdentityClientId=$(echo $managedIdentityJson | jq -r '.clientId')
+      managedIdentityPrincipalId=$(echo $managedIdentityJson | jq -r '.principalId')
 
       echo "Assigning Managed Identity $managedIdentityName with ID $managedIdentityId and Client ID $managedIdentityClientId and Principal ID $managedIdentityPrincipalId"
 

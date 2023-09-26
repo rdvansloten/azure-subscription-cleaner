@@ -46,6 +46,7 @@ steps:
     inlineScript: |
       tags="ExpiryDate=Exempt"
 
+      echo "Setting up Azure CLI..."
       az config set core.only_show_errors=yes
 
       echo "Switching to Subscription ${{ parameters.subscriptionId }}..."

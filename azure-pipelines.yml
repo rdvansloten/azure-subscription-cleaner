@@ -54,7 +54,7 @@ steps:
       az group create --name "${{ parameters.resourceGroupName }}" --location "${{ parameters.location }}" --tags "$tags" --output "none"
 
       echo "Creating Storage Account ${{ parameters.storageAccountName }} in Resource Group ${{ parameters.resourceGroupName }}..."
-      az storage account create --name "${{ parameters.storageAccountName }}" --location "${{ parameters.location }}" --resource-group "${{ parameters.resourceGroupName }}" --allow-blob-public-access "false" --sku "Standard_LRS" --tags "$tags" --output "none"
+      az storage account create --name "${{ parameters.storageAccountName }}" --location "${{ parameters.location }}" --resource-group "${{ parameters.resourceGroupName }}" --allow-blob-public-access false --sku "Standard_LRS" --tags "$tags" --output "none"
 
       echo "Creating Managed Identity for Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
       managedIdentityJson=$(az identity create --name "${{ parameters.functionAppName }}-identity" --resource-group "${{ parameters.resourceGroupName }}" --tags "$tags" --output "json")

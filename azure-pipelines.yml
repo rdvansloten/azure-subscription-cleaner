@@ -36,82 +36,88 @@ parameters:
   type: number
   default: 14
 
+- name: createInfrastructure
+  displayName: "Create Infrastructure"
+  type: boolean
+  default: true
+
 steps:
-- task: AzureCLI@2
-  displayName: Set up Function App
-  inputs:
-    azureSubscription: "${{ parameters.serviceConnection }}"
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      tags="ExpiryDate=Exempt"
+- ${{ if parameters.createInfrastructure }}:
+  - task: AzureCLI@2
+    displayName: Set up Function App Infrastructure
+    inputs:
+      azureSubscription: "${{ parameters.serviceConnection }}"
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        tags="ExpiryDate=Exempt"
 
-      echo "Setting up Azure CLI..."
-      az config set core.only_show_errors=yes
+        echo "Setting up Azure CLI..."
+        az config set core.only_show_errors=yes
 
-      echo "Switching to Subscription ${{ parameters.subscriptionId }}..."
-      az account set --subscription ${{ parameters.subscriptionId }} --output "none"
+        echo "Switching to Subscription ${{ parameters.subscriptionId }}..."
+        az account set --subscription ${{ parameters.subscriptionId }} --output "none"
 
-      echo "Creating Resource Group ${{ parameters.resourceGroupName }} in Location ${{ parameters.location }}..."
-      az group create \
-        --name "${{ parameters.resourceGroupName }}" \
-        --location "${{ parameters.location }}" \
-        --tags "$tags" \
-        --output "none"
-
-      echo "Creating Storage Account ${{ parameters.storageAccountName }} in Resource Group ${{ parameters.resourceGroupName }}..."
-      az storage account create \
-        --name "${{ parameters.storageAccountName }}" \
-        --location "${{ parameters.location }}" \
-        --resource-group "${{ parameters.resourceGroupName }}" \
-        --https-only \
-        --min-tls-version "TLS1_2" \
-        --allow-blob-public-access false \
-        --sku "Standard_LRS" \
-        --tags "$tags" \
-        --output "none"
-
-      echo "Creating Managed Identity for Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
-      managedIdentityJson=$(az identity create --name "${{ parameters.functionAppName }}-identity" --resource-group "${{ parameters.resourceGroupName }}" --tags "$tags" --output "json")
-        
-      managedIdentityName=$(echo $managedIdentityJson | jq -r '.name')
-      managedIdentityId=$(echo $managedIdentityJson | jq -r '.id')
-      managedIdentityClientId=$(echo $managedIdentityJson | jq -r '.clientId')
-      managedIdentityPrincipalId=$(echo $managedIdentityJson | jq -r '.principalId')
-
-      echo "Assigning Managed Identity $managedIdentityName permissions on Subscription ${{ parameters.subscriptionId }}..."
-      az role assignment create \
-        --assignee-object-id "$managedIdentityPrincipalId" \
-        --role ${{ parameters.managedIdentityRoleName }} \
-        --assignee-principal-type "ServicePrincipal" \
-        --scope "/subscriptions/${{ parameters.subscriptionId }}" \
-        --output "none"
-
-      echo "Creating Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
-      az functionapp create \
-        --name "${{ parameters.functionAppName }}" \
-        --storage-account "${{ parameters.storageAccountName }}" \
-        --consumption-plan-location "${{ parameters.location }}" \
-        --resource-group "${{ parameters.resourceGroupName }}" \
-        --assign-identity "$managedIdentityId" \
-        --functions-version "4" \
-        --os-type "Linux" \
-        --runtime "python" \
-        --runtime-version "3.9" \
-        --tags "$tags" \
-        --output "none"
-
-      echo "Setting app settings on Function App ${{ parameters.functionAppName }}..."
-      values=("EXPIRY_DAYS=${{ parameters.expiryDays }}" "MANAGED_IDENTITY_CLIENT_ID=$managedIdentityClientId" "AZURE_SUBSCRIPTION_ID=${{ parameters.subscriptionId }}")
-
-      for value in "${values[@]}"; do
-        echo "Setting app setting $value on Function App ${{ parameters.functionAppName }}..."
-        az functionapp config appsettings set \
-          --name ${{ parameters.functionAppName }} \
-          --resource-group "${{ parameters.resourceGroupName }}" \
-          --settings "$value" \
+        echo "Creating Resource Group ${{ parameters.resourceGroupName }} in Location ${{ parameters.location }}..."
+        az group create \
+          --name "${{ parameters.resourceGroupName }}" \
+          --location "${{ parameters.location }}" \
+          --tags "$tags" \
           --output "none"
-      done
+
+        echo "Creating Storage Account ${{ parameters.storageAccountName }} in Resource Group ${{ parameters.resourceGroupName }}..."
+        az storage account create \
+          --name "${{ parameters.storageAccountName }}" \
+          --location "${{ parameters.location }}" \
+          --resource-group "${{ parameters.resourceGroupName }}" \
+          --https-only \
+          --min-tls-version "TLS1_2" \
+          --allow-blob-public-access false \
+          --sku "Standard_LRS" \
+          --tags "$tags" \
+          --output "none"
+
+        echo "Creating Managed Identity for Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
+        managedIdentityJson=$(az identity create --name "${{ parameters.functionAppName }}-identity" --resource-group "${{ parameters.resourceGroupName }}" --tags "$tags" --output "json")
+          
+        managedIdentityName=$(echo $managedIdentityJson | jq -r '.name')
+        managedIdentityId=$(echo $managedIdentityJson | jq -r '.id')
+        managedIdentityClientId=$(echo $managedIdentityJson | jq -r '.clientId')
+        managedIdentityPrincipalId=$(echo $managedIdentityJson | jq -r '.principalId')
+
+        echo "Assigning Managed Identity $managedIdentityName permissions on Subscription ${{ parameters.subscriptionId }}..."
+        az role assignment create \
+          --assignee-object-id "$managedIdentityPrincipalId" \
+          --role ${{ parameters.managedIdentityRoleName }} \
+          --assignee-principal-type "ServicePrincipal" \
+          --scope "/subscriptions/${{ parameters.subscriptionId }}" \
+          --output "none"
+
+        echo "Creating Function App ${{ parameters.functionAppName }} in Resource Group ${{ parameters.resourceGroupName }}..."
+        az functionapp create \
+          --name "${{ parameters.functionAppName }}" \
+          --storage-account "${{ parameters.storageAccountName }}" \
+          --consumption-plan-location "${{ parameters.location }}" \
+          --resource-group "${{ parameters.resourceGroupName }}" \
+          --assign-identity "$managedIdentityId" \
+          --functions-version "4" \
+          --os-type "Linux" \
+          --runtime "python" \
+          --runtime-version "3.9" \
+          --tags "$tags" \
+          --output "none"
+
+        echo "Setting app settings on Function App ${{ parameters.functionAppName }}..."
+        values=("EXPIRY_DAYS=${{ parameters.expiryDays }}" "MANAGED_IDENTITY_CLIENT_ID=$managedIdentityClientId" "AZURE_SUBSCRIPTION_ID=${{ parameters.subscriptionId }}")
+
+        for value in "${values[@]}"; do
+          echo "Setting app setting $value on Function App ${{ parameters.functionAppName }}..."
+          az functionapp config appsettings set \
+            --name ${{ parameters.functionAppName }} \
+            --resource-group "${{ parameters.resourceGroupName }}" \
+            --settings "$value" \
+            --output "none"
+        done
 
 - task: AzureCLI@2
   displayName: Install requirements from requirements.txt

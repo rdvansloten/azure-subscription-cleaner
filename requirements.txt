@@ -5,5 +5,4 @@
 azure-functions
 datetime
 azure-identity
-azure-storage-blob
 azure-mgmt-resource

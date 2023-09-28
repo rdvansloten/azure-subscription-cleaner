@@ -53,7 +53,7 @@ steps:
         tags="ExpiryDate=Exempt"
 
         echo "Setting up Azure CLI..."
-        # az config set core.only_show_errors=yes
+        az config set core.only_show_errors=yes
 
         echo "Switching to Subscription ${{ parameters.subscriptionId }}..."
         az account set --subscription ${{ parameters.subscriptionId }} --output "none"
